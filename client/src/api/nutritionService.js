@@ -25,4 +25,9 @@ export const nutritionService = {
     const response = await axiosInstance.post('/nutrition/analyze', { description: foodDescription });
     return response;
   },
+
+  getFoodImage: async (query) => {
+    const response = await axiosInstance.get(`/nutrition/image?q=${encodeURIComponent(query)}`);
+    return response?.image;
+  },
 };

@@ -1,6 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://nutri-gen-3.onrender.com/api';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://nutri-gen-3.onrender.com').replace(/\/$/, '');
+
+const normalizeUrl = (url = '') => {
+  if (!url || /^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  const trimmedUrl = url.startsWith('/') ? url.slice(1) : url;
+  if (trimmedUrl.startsWith('api/')) {
+    return `/${trimmedUrl}`;
+  }
+
+  return `/api/${trimmedUrl}`;
+};
 
 // Separate axios instance so the admin token never mixes with a regular user's token.
 const adminAxios = axios.create({
@@ -14,6 +27,11 @@ adminAxios.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (config.url) {
+    config.url = normalizeUrl(config.url);
+  }
+
   return config;
 });
 

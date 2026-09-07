@@ -120,6 +120,19 @@ class MockCollectionRef:
     def limit(self, count):
         return self
 
+def sanitize_in_place(data):
+    if isinstance(data, dict):
+        for k, v in list(data.items()):
+            if v == firestore.SERVER_TIMESTAMP:
+                from datetime import datetime
+                data[k] = datetime.utcnow().isoformat() + "Z"
+            else:
+                sanitize_in_place(v)
+    elif isinstance(data, list):
+        for item in data:
+            sanitize_in_place(item)
+    return data
+
 class MockFirestore:
     def __init__(self, filepath="mock_db.json"):
         server_dir = os.path.dirname(os.path.abspath(__file__))
@@ -146,7 +159,7 @@ class MockFirestore:
         return self.data.get(path)
 
     def set_data(self, path, data):
-        self.data[path] = data
+        self.data[path] = sanitize_in_place(data)
         self.save()
 
 class MockUser:
@@ -177,15 +190,22 @@ class MockAuth:
         raise Exception("User not found")
 
     def create_custom_token(self, uid, additional_claims=None):
-        claims = additional_claims or {}
-        claims.update({"uid": uid})
-        return json.dumps(claims)
+        # Return a space-free token to avoid header split/truncation issues
+        return f"mocktoken-{uid}"
 
     def verify_id_token(self, id_token):
+        if id_token.startswith("mocktoken-"):
+            uid = id_token.replace("mocktoken-", "")
+            return {"uid": uid, "email": f"{uid}@example.com", "role": "admin" if uid.lower() in ["veda", "ved"] else "user"}
+        
+        # Force logout for deprecated/stale truncated mock tokens
+        if id_token.startswith('{"uid":') or 'uid' in id_token:
+            raise ValueError("Invalid mock token format")
+            
         try:
             return json.loads(id_token)
         except Exception:
-            return {"uid": id_token, "email": f"{id_token}@example.com", "role": "admin" if id_token == "veda" else "user"}
+            return {"uid": id_token, "email": f"{id_token}@example.com", "role": "admin" if id_token.lower() in ["veda", "ved"] else "user"}
 
 
 try:

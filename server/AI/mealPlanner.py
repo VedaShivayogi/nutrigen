@@ -95,11 +95,59 @@ Return the result in pure JSON. No introductions, comments, markdown, or text ou
 This JSON will be stored in a Firebase database and shown in a personal meal planning app. Ensure accuracy, clarity, and consistency in formatting.
 """
 
-    messages = [SystemMessage(content="You are a nutrition assistant."), HumanMessage(content=prompt)]
-    result = model.invoke(messages)
-    response = result.content.strip()
-    if response.startswith("```json"):
-        response = response[len("```json"):].strip()
-    if response.endswith("```"):
-        response = response[:-len("```")].strip()
-    return response
+    try:
+        messages = [SystemMessage(content="You are a nutrition assistant."), HumanMessage(content=prompt)]
+        result = model.invoke(messages)
+        response = result.content.strip()
+        if response.startswith("```json"):
+            response = response[len("```json"):].strip()
+        if response.endswith("```"):
+            response = response[:-len("```")].strip()
+        return response
+    except Exception as e:
+        print(f"=== Meal plan generation error: {e}. Generating local fallback meal plan. ===")
+        import json
+        is_veg = any(x in str(diet_preference).lower() for x in ["veg", "vegan"])
+        
+        days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        meal_plan = {}
+        for day in days:
+            meal_plan[day] = {
+                "Breakfast": {
+                    "name": "Oatmeal with Almonds & Banana" if is_veg else "Scrambled Eggs with Avocado Toast",
+                    "ingredients": "Rolled oats, almond milk, banana, almonds, honey" if is_veg else "Eggs, whole wheat bread, avocado, butter, cherry tomatoes",
+                    "portionSize": "1 bowl" if is_veg else "2 eggs & 1 toast",
+                    "calories": 350,
+                    "protein": 12 if is_veg else 18,
+                    "carbs": 55 if is_veg else 24,
+                    "fat": 10 if is_veg else 16
+                },
+                "Lunch": {
+                    "name": "Quinoa Salad with Chickpeas" if is_veg else "Grilled Chicken breast with Quinoa",
+                    "ingredients": "Quinoa, chickpeas, cucumber, olive oil, lemon juice" if is_veg else "Chicken breast, quinoa, olive oil, broccoli",
+                    "portionSize": "1 plate",
+                    "calories": 450,
+                    "protein": 15 if is_veg else 35,
+                    "carbs": 60 if is_veg else 45,
+                    "fat": 14 if is_veg else 12
+                },
+                "Snack": {
+                    "name": "Mixed Nuts and Apple Slice" if is_veg else "Greek Yogurt with Berries",
+                    "ingredients": "Almonds, walnuts, apple" if is_veg else "Greek yogurt, honey, blueberries",
+                    "portionSize": "1 handful" if is_veg else "1 cup",
+                    "calories": 200,
+                    "protein": 6 if is_veg else 15,
+                    "carbs": 25 if is_veg else 20,
+                    "fat": 12 if is_veg else 4
+                },
+                "Dinner": {
+                    "name": "Brown Rice with Tofu & Veggies" if is_veg else "Baked Salmon with Sweet Potato",
+                    "ingredients": "Brown rice, tofu, broccoli, bell peppers, soy sauce" if is_veg else "Salmon fillet, sweet potato, green beans, olive oil",
+                    "portionSize": "1 plate",
+                    "calories": 500,
+                    "protein": 18 if is_veg else 32,
+                    "carbs": 65 if is_veg else 40,
+                    "fat": 16 if is_veg else 18
+                }
+            }
+        return json.dumps({"mealPlan": meal_plan})

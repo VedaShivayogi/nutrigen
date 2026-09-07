@@ -24,6 +24,8 @@ const getNutritionDataAPI = async (fdcId) => {
   }
 };
 
+import { fetchFoodImage } from '../api/imageService';
+
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -59,7 +61,13 @@ const InsightsPage = () => {
 
     try {
       const results = await searchFoodAPI(query.trim());
-      setSearchResults(results);
+      const resultsWithImages = await Promise.all(
+        results.map(async (food) => {
+          const img = food.image || (await fetchFoodImage(food.name));
+          return { ...food, image: img };
+        })
+      );
+      setSearchResults(resultsWithImages);
       if (!searchHistory.find(item => item.name.toLowerCase() === query.toLowerCase())) {
         setSearchHistory(prev => [{ id: Date.now(), name: query }, ...prev.slice(0, 4)]);
       }
@@ -222,7 +230,10 @@ const InsightsPage = () => {
                           alt={food.name}
                           className="w-full h-full object-cover"
                           loading="lazy"
-                          onError={(e) => { e.target.style.display = 'none'; }}
+                          onError={(e) => { 
+                            e.target.onerror = null; 
+                            e.target.src = 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&auto=format&fit=crop'; 
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -263,7 +274,10 @@ const InsightsPage = () => {
                         src={selectedFood.image}
                         alt={selectedFood.name}
                         className="w-full h-48 object-cover rounded-xl mb-6"
-                        onError={(e) => { e.target.style.display = 'none'; }}
+                        onError={(e) => { 
+                          e.target.onerror = null; 
+                          e.target.src = 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&auto=format&fit=crop'; 
+                        }}
                       />
                     )}
                     <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{selectedFood.name}</h2>

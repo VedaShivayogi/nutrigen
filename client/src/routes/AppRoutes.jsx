@@ -12,6 +12,9 @@ import InsightsPage from '../pages/InsightsPage';
 import VirtualCoachPage from '../pages/VirtualCoachPage';
 import ProfilePage from '../pages/ProfilePage';
 import ProgressPage from '../pages/ProgressPage';
+import TermsPage from '../pages/TermsPage';
+import PrivacyPage from '../pages/PrivacyPage';
+import ContactPage from '../pages/ContactPage';
 import AdminLoginPage from '../pages/AdminLoginPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import NotFoundPage from '../pages/NotFoundPage';
@@ -84,6 +87,21 @@ const AppRoutes = () => {
       <Route path="/admin/dashboard" element={
         <MainLayout showFooter={false}>
           <AdminDashboardPage />
+        </MainLayout>
+      } />
+      <Route path="/terms" element={
+        <MainLayout>
+          <TermsPage />
+        </MainLayout>
+      } />
+      <Route path="/privacy" element={
+        <MainLayout>
+          <PrivacyPage />
+        </MainLayout>
+      } />
+      <Route path="/contact" element={
+        <MainLayout>
+          <ContactPage />
         </MainLayout>
       } />
       <Route path="*" element={

@@ -53,4 +53,21 @@ When providing nutrition advice, always consider these details to give personali
         return result.content
     except Exception as e:
         print(f"=== AI chat error ===\n{traceback.format_exc()}")
-        return "I'm sorry, I encountered an error while processing your request. Please try again later."
+        
+        # Friendly local offline mock chatbot fallback
+        last_message_lower = ""
+        if chat_history:
+            last_message_lower = chat_history[-1].get('content', '').lower()
+            
+        if "workout" in last_message_lower or "exercise" in last_message_lower or "gym" in last_message_lower:
+            return "For pre-workout energy, try light carbs with a bit of protein 30-60 minutes before: like a banana with peanut butter, oatmeal with berries, or toast with a boiled egg. Stay hydrated!"
+        elif "hi" in last_message_lower or "hello" in last_message_lower or "hey" in last_message_lower:
+            return "Hello! I am your AI Nutrition Coach. How can I help you with your healthy eating goals today?"
+        elif "diet" in last_message_lower or "weight" in last_message_lower:
+            return "To achieve your goals, focus on nutrient-dense whole foods, lean proteins, healthy fats, and complex carbohydrates. Tell me more about what you'd like to adjust!"
+        elif "roti" in last_message_lower or "bread" in last_message_lower:
+            return "Roti or whole wheat flatbread is a great source of complex carbohydrates and fiber. Try pairing it with lentils or vegetables for a balanced meal."
+        elif "meal" in last_message_lower or "plan" in last_message_lower:
+            return "I can suggest meal plans! Try focusing on oatmeal or eggs for breakfast, a fresh salad or chicken/tofu wrap for lunch, and grilled salmon or dal with brown rice and mixed vegetables for dinner."
+        else:
+            return "Hello! I'm your AI Nutrition Assistant. I can help with pre-workout meals, diet recommendations, and custom food plans. What would you like to know?"

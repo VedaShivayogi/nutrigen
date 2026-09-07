@@ -7,6 +7,15 @@ import { mealPlanService } from '../api/mealPlanService';
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
+const normalizeMealPlanData = (payload) => {
+  if (!payload) return null;
+  if (payload.mealPlan) return payload.mealPlan;
+  if (payload.meal_plan?.mealPlan) return payload.meal_plan.mealPlan;
+  if (payload.meal_plan) return payload.meal_plan;
+  if (payload.mealPlan?.Sunday || payload.mealPlan?.Monday) return payload.mealPlan;
+  return null;
+};
+
 const MealPlannerPage = () => {
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
   const [meals, setMeals] = useState(null);
@@ -19,14 +28,23 @@ const MealPlannerPage = () => {
     const fetchMealPlan = async () => {
       try {
         setLoading(true);
-        const data = await mealPlanService.getMealPlan();
-        setMeals(data.mealPlan);
         setError(null);
+        const data = await mealPlanService.getMealPlan();
+        const plan = normalizeMealPlanData(data);
+
+        if (!plan) {
+          setMeals(null);
+          setError('No meal plan is available yet. Create one to get started.');
+          return;
+        }
+
+        setMeals(plan);
       } catch (err) {
         if (err.response && err.response.status === 404) {
           setMeals(null);
+          setError(null);
         } else {
-          setError('Failed to fetch meal plan.');
+          setError('Unable to load your meal plan right now. Please try again.');
         }
       } finally {
         setLoading(false);
@@ -43,9 +61,28 @@ const MealPlannerPage = () => {
       setLoading(true);
       setError(null);
       const data = await mealPlanService.generateMealPlan();
-      setMeals(data.meal_plan.mealPlan);
+      const plan = normalizeMealPlanData(data);
+
+      if (!plan) {
+        throw new Error('No meal plan data was returned by the server.');
+      }
+
+      setMeals(plan);
     } catch (err) {
-      setError('Plan will updated in while');
+      setMeals(null);
+      const backendMessage =
+        err?.response?.data?.error?.description ||
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.response?.data?.details ||
+        err?.message;
+
+      setError(
+        typeof backendMessage === 'object'
+          ? JSON.stringify(backendMessage)
+          : backendMessage ||
+              'Unable to generate your meal plan right now. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -97,7 +134,11 @@ const MealPlannerPage = () => {
             </button>
           </div>
 
-          {error && <div className="text-center text-red-500 dark:text-red-400 mb-4">{error}</div>}
+          {(loading || error) && (
+            <div className={`text-center mb-4 ${error ? 'text-red-500 dark:text-red-400' : 'text-primary dark:text-primary-300'}`}>
+              {error || 'Your meal plan is being generated. Please wait...'}
+            </div>
+          )}
 
           <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
             {daysOfWeek.map((day, index) => (
@@ -150,7 +191,7 @@ const MealPlannerPage = () => {
               </div>
             )}
 
-            {!loading && !meals && (
+            {!loading && !meals && !error && (
               <div className="text-center py-8">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">No Meal Plan Found</h3>
                 <p className="text-gray-600 dark:text-gray-300">Click "Create New Plan" to get started.</p>

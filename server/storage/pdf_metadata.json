@@ -1,0 +1,35 @@
+{
+  "test_user_token": {
+    "dde3f850": {
+      "pdf_id": "dde3f850",
+      "filename": "sample_report.pdf",
+      "file_path": "C:\\Users\\Admin\\Desktop\\nutr\\nutrigen-ai-full\\Final Deliverables\\server\\storage\\uploads\\test_user_token\\dde3f850_sample_report.pdf",
+      "total_pages": 1,
+      "chunks_count": 0,
+      "chunks": []
+    }
+  },
+  "test_user_2": {
+    "pdf_101": {
+      "pdf_id": "pdf_101",
+      "filename": "quantum_computing_guide.pdf",
+      "file_path": "dummy.pdf",
+      "total_pages": 5,
+      "chunks_count": 2,
+      "chunks": [
+        {
+          "pdf_id": "pdf_101",
+          "filename": "quantum_computing_guide.pdf",
+          "page": 3,
+          "text": "Qubits exploit quantum superposition to process complex multidimensional data exponentially faster than classical bits."
+        },
+        {
+          "pdf_id": "pdf_101",
+          "filename": "quantum_computing_guide.pdf",
+          "page": 5,
+          "text": "Quantum key distribution guarantees unconditional secure communication using entanglement."
+        }
+      ]
+    }
+  }
+}

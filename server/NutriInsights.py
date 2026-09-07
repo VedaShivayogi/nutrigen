@@ -65,46 +65,6 @@ def get_nutrients_by_name(fdc_id, nutrient_name):
             }
     return result
 
-FOOD_CATEGORY_KEYWORDS = {
-    'biryani': 'biryani', 'fried rice': 'rice', 'rice': 'rice',
-    'pizza': 'pizza', 'burger': 'burger',
-    'dosa': 'dosa', 'idli': 'idly', 'idly': 'idly', 'samosa': 'samosa',
-    'pasta': 'pasta', 'noodle': 'pasta',
-    'cake': 'dessert', 'dessert': 'dessert', 'ice cream': 'dessert',
-    'butter chicken': 'butter-chicken',
-}
-
-_image_cache = {}
-
-def match_food_category(name):
-    name_lower = (name or '').lower()
-    for keyword, category in FOOD_CATEGORY_KEYWORDS.items():
-        if keyword in name_lower:
-            return category
-    return None
-
-def get_food_image(name):
-    """Best-effort food photo lookup. Returns None (never raises) on any failure
-    so a slow/broken image API never breaks food search. Failures are not cached,
-    since Foodish's free hosting can be slow to wake up on the first call."""
-    category = match_food_category(name)
-    cache_key = category or '_random'
-    if cache_key in _image_cache:
-        return _image_cache[cache_key]
-
-    image_url = None
-    try:
-        if category:
-            resp = requests.get(f"https://foodish-api.com/api/images/{category}", timeout=10)
-        else:
-            resp = requests.get("https://foodish-api.com/api/", timeout=10)
-        image_url = resp.json().get('image')
-    except Exception:
-        image_url = None
-
-    if image_url:
-        _image_cache[cache_key] = image_url
-    return image_url
 
 def parse_search_results(search_data):
     foods = search_data.get('foods', [])
@@ -114,7 +74,7 @@ def parse_search_results(search_data):
             'name': food.get('description'),
             'brand': food.get('brandOwner'),
             'dataType': food.get('dataType'),
-            'image': get_food_image(food.get('description')),
+            'image': None,
         }
         for food in foods
     ]
@@ -163,6 +123,6 @@ def parse_food_details(food_data):
         'fdcId': food_data.get('fdcId'),
         'name': food_data.get('description'),
         'brand': food_data.get('brandOwner'),
-        'image': get_food_image(food_data.get('description')),
+        'image': None,
         'nutrients': nutrients
     }
