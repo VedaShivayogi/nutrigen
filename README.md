@@ -101,3 +101,5 @@ If your assignment specifically requires RAG or a trained model, this project do
 - Single-region Firestore, no offline support, no caching layer — every screen re-fetches from the network.
 - Admin panel has zero role-based access control beyond one shared username/password — not suitable for multi-admin production use as-is.
 - No automated tests in the repo.
+
+veda
