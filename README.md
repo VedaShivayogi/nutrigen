@@ -2,7 +2,7 @@
 
 An AI-assisted nutrition app: track weight/water/exercise, search foods for nutrition breakdowns, generate AI meal plans, and chat with an AI nutrition coach. React (Vite) frontend + Flask backend + Firebase.
 
---
+-
 
 ## How to Run
 
